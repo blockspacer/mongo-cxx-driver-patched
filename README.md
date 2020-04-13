@@ -1,3 +1,40 @@
+# About
+
+patched to support "zlib/v1.2.11@conan/stable" with "openssl/OpenSSL_1_1_1-stable@conan/stable"
+
+## Local build
+
+```bash
+export CC=clang-6.0
+export CXX=clang++-6.0
+
+$CC --version
+$CXX --version
+
+# use version from conan
+(sudo apt remove *gflag* || true)
+
+conan remote add conan-center https://api.bintray.com/conan/conan/conan-center False
+
+export PKG_NAME=mongo-cxx-driver/3.3.0@dev/stable
+
+(CONAN_REVISIONS_ENABLED=1 \
+    conan remove --force $PKG_NAME || true)
+
+CONAN_REVISIONS_ENABLED=1 \
+    CONAN_VERBOSE_TRACEBACK=1 \
+    CONAN_PRINT_RUN_COMMANDS=1 \
+    CONAN_LOGGING_LEVEL=10 \
+    GIT_SSL_NO_VERIFY=true \
+    conan create . dev/stable -s build_type=Debug --profile clang --build missing -o openssl:shared=True
+
+CONAN_REVISIONS_ENABLED=1 \
+    CONAN_VERBOSE_TRACEBACK=1 \
+    CONAN_PRINT_RUN_COMMANDS=1 \
+    CONAN_LOGGING_LEVEL=10 \
+    conan upload $PKG_NAME --all -r=conan-local -c --retry 3 --retry-wait 10 --force
+```
+
 ## Package Status
 
 | Bintray | Windows | Linux & macOS |

@@ -7,18 +7,21 @@ class MongoCxxConan(ConanFile):
     name = "mongo-cxx-driver"
     version = "3.3.0"
     url = "http://github.com/bincrafters/conan-mongo-cxx-driver"
+    repo_url = 'https://github.com/mongodb/mongo-cxx-driver.git'
     description = "C++ Driver for MongoDB"
     license = "https://github.com/mongodb/mongo-cxx-driver/blob/{0}/LICENSE".format(version)
     settings =  "os", "compiler", "arch", "build_type"
     options = {"shared": [True, False]}
     default_options = {'shared': 'False'}
-    requires = 'mongo-c-driver/[~=1.9]@bincrafters/stable'
+    requires = 'mongo-c-driver/1.16.1@dev/stable'
     generators = "cmake"
+    _source_subfolder = "sources"
 
     def source(self):
-        tools.get("https://github.com/mongodb/mongo-cxx-driver/archive/r{0}.tar.gz".format(self.version))
-        extracted_dir = "mongo-cxx-driver-r{0}".format(self.version)
-        os.rename(extracted_dir, "sources")
+        #tools.get("https://github.com/mongodb/mongo-cxx-driver/archive/r{0}.tar.gz".format(self.version))
+        #extracted_dir = "mongo-cxx-driver-r{0}".format(self.version)
+        #os.rename(extracted_dir, "sources")
+        self.run('git clone --progress --depth 1 --branch r{} --recursive --recurse-submodules {} {}'.format(self.version, self.repo_url, self._source_subfolder))
 
     def build(self):
         conan_magic_lines='''project(MONGO_CXX_DRIVER LANGUAGES CXX)
@@ -53,7 +56,7 @@ class MongoCxxConan(ConanFile):
         set(BSONCXX_POLY_USE_BOOST 0)
         set(BSONCXX_POLY_USE_STD 0)
         '''
-        
+
         cmake_file = "sources/CMakeLists.txt"
         tools.replace_in_file(cmake_file, "project(MONGO_CXX_DRIVER LANGUAGES CXX)", conan_magic_lines)
         content = tools.load(cmake_file)
